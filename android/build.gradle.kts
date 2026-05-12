@@ -1,17 +1,9 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id("com.android.library")
-    import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 }
 
 group = "com.sharmadhiraj.installed_apps"
 version = "1.0-SNAPSHOT"
-
-repositories {
-        google()
-        mavenCentral()
-    }
 
 android {
     namespace = "com.sharmadhiraj.installed_apps"
@@ -35,11 +27,4 @@ android {
     defaultConfig {
         minSdk = 24
     }
-
 }
-
- kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
-        }
-    }

@@ -48,38 +48,35 @@ class PlatformTypeUtil {
 
         private fun scanApkForPlatform(apkPath: String?): String {
             if (apkPath.isNullOrEmpty()) return "unknown"
-            var zipFile: ZipFile? = null
             return try {
-                zipFile = try {
+                val zipFile = try {
                     ZipFile(apkPath)
                 } catch (e: java.util.zip.ZipException) {
                     Log.w("InstalledAppsPlugin", "Invalid APK zip: ${e.message}")
                     return "unknown"
                 }
-                val entries = zipFile?.entries()
-                    ?.asSequence()
-                    ?.map { it.name }
-                    ?.toList() ?: emptyList<String>()
-                when {
-                    entries.any { it.contains("/flutter_assets/") } -> "flutter"
-                    entries.any {
-                        it.contains("react_native_routes.json") || it.contains("libs_reactnativecore_components") || it.contains(
-                            "node_modules_reactnative"
-                        )
-                    } -> "react_native"
+                zipFile.use { apk ->
+                    apk.entries()
+                        .asSequence()
+                        .map { it.name }
+                        .forEach { entryName ->
+                            when {
+                                entryName.contains("/flutter_assets/") -> return "flutter"
+                                entryName.contains("react_native_routes.json") ||
+                                    entryName.contains("libs_reactnativecore_components") ||
+                                    entryName.contains("node_modules_reactnative") -> {
+                                    return "react_native"
+                                }
 
-                    entries.any { it.contains("libaot-Xamarin") } -> "xamarin"
-                    entries.any { it.contains("node_modules_ionic") } -> "ionic"
-                    else -> "native_or_others"
+                                entryName.contains("libaot-Xamarin") -> return "xamarin"
+                                entryName.contains("node_modules_ionic") -> return "ionic"
+                            }
+                        }
+                    "native_or_others"
                 }
             } catch (e: Exception) {
                 Log.w("InstalledAppsPlugin", "getPlatform: ${e.message}")
                 "unknown"
-            } finally {
-                try {
-                    zipFile?.close()
-                } catch (_: Exception) {
-                }
             }
         }
 
